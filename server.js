@@ -4,6 +4,7 @@ var ecstatic = require('ecstatic');
 var io = require('socket.io');
 var Player = require('./lib/Player');
 
+var ipaddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 var port = process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT || 8080;
 var socket;	// Socket controller
 var players;	// Array of connected players
@@ -19,7 +20,7 @@ process.argv.forEach(function (val, index, array) {
 // Create and start the http server
 var server = http.createServer(
   ecstatic({ root: __dirname + '/public' })
-).listen(port, function (err) {
+).listen(port, ipaddress, function (err) {
   if (err) {
     throw err;
   }
