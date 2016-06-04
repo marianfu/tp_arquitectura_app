@@ -28,6 +28,8 @@ function create() {
     bmd = game.add.bitmapData(800, 600);
     bmd.context.fillStyle = '#ffffff';
 
+    game.stage.disableVisibilityChange = true;
+
     var bg = game.add.sprite(0, 0, bmd);
 
     game.physics.arcade.gravity.y = 100;
