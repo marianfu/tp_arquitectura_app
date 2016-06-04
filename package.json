@@ -15,5 +15,12 @@
   "bugs": {
     "url": "https://github.com/marianfu/tp_arquitectura_app/issues"
   },
-  "homepage": "https://github.com/marianfu/tp_arquitectura_app#readme"
+  "homepage": "https://github.com/marianfu/tp_arquitectura_app#readme",
+  "dependencies": {
+    "ecstatic": "^1.4.1",
+    "http": "0.0.0",
+    "http-server": "^0.9.0",
+    "path": "^0.12.7",
+    "socket.io": "^1.4.6"
+  }
 }
