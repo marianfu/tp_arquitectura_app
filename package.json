@@ -1,0 +1,19 @@
+{
+  "name": "tp_arquitectura_app",
+  "version": "1.0.0",
+  "description": "websocket-longpolling",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/marianfu/tp_arquitectura_app.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/marianfu/tp_arquitectura_app/issues"
+  },
+  "homepage": "https://github.com/marianfu/tp_arquitectura_app#readme"
+}
