@@ -77,7 +77,11 @@ function update() {
       movePlayer.player.y = posiblePos.y 
     }
 
-    socket.emit('move player', { x: player.x, y: player.y });
+    socket.emit('move player', {
+      x: player.x,
+      y: player.y,
+      startTime: (new Date()).getTime()
+    });
 }
 
 function render() {

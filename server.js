@@ -130,7 +130,8 @@ function onMovePlayer (data) {
     y: movePlayer.getY(),
     load: __resources.load,
     freeMemory: __resources.freeMemory,
-    totalMemory: __resources.totalMemory
+    totalMemory: __resources.totalMemory,
+    startTime: data.startTime
   };
   this.broadcast.emit('move player', data);
 }
