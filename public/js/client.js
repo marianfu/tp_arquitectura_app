@@ -22,7 +22,7 @@ function create() {
 
     game.time.advancedTiming = true;
     game.physics.startSystem(Phaser.Physics.ARCADE);
-    //socket = io.connect({'transports': ['websocket']});
+    // socket = io.connect({'transports': ['polling']});
     socket = io.connect();
     game.stage.backgroundColor = '#so124184';
     bmd = game.add.bitmapData(800, 600);
