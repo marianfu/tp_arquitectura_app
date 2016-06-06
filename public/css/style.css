@@ -1,0 +1,15 @@
+.benchmarks {
+	@media (min-width: 992px) {
+		margin-left: -80px;
+	}
+}
+
+.benchmark-table {
+	height: 175px;
+	overflow-y: auto;
+}
+
+.packets-per-second,
+.average-ellapsed-ms {
+	font-weight: 700;
+}
