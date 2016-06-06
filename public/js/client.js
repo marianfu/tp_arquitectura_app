@@ -21,7 +21,7 @@ var gameState = {
         game.stage.backgroundColor = '#0D47A1';
         game.stage.disableVisibilityChange = true;
 
-        socket = io.connect();
+        socket = io.connect({transports: getTransports()});
         setupHooks(socket);
 
         bmd = game.add.bitmapData(800, 600);
@@ -166,6 +166,28 @@ function playerById (id) {
         }
     }
     return false;
+}
+
+function getTransports() {
+	var hash = location.hash;
+	var transports = [];
+	
+	switch (hash) {
+		case '#ws':
+		case '#websocket':
+			transports.push('websocket');
+			break;
+		case '#xhr':
+		case '#polling':
+			transports.push('polling');
+			break;
+		default:
+			transports = ['websocket', 'polling'];
+			break;
+	}
+	
+	document.getElementById('transport-type').innerText = 'Transport type(s): ' + transports.join(', '); 
+	return transports;
 }
 
 // Custom 'on' and 'emit' socket functions to benchmark performance
