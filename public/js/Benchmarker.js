@@ -34,7 +34,7 @@
 		}
 		
 		var rowCount = this.table.rows.length;
-		if (rowCount > 100) {
+		if (rowCount > this.maxRows) {
 			this.table.deleteRow(rowCount - 1);
 		}
 	};
