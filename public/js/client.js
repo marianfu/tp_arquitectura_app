@@ -24,6 +24,7 @@ function create() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
     // socket = io.connect({'transports': ['polling']});
     socket = io.connect();
+	setupHooks(socket);
     game.stage.backgroundColor = '#so124184';
     bmd = game.add.bitmapData(800, 600);
     bmd.context.fillStyle = '#ffffff';
@@ -179,4 +180,32 @@ function playerById (id) {
     }
   }
   return false;
+}
+
+// Custom 'on' and 'emit' socket functions to benchmark performance
+function setupHooks(socket) {
+	var oldOn = socket.on;
+	var inBenchmarker = new Benchmarker('benchmark-in');
+	socket.on = function (name, callback) {
+		if (callback) {
+			var oldCallback = callback;
+			callback = function (data) {
+				if (data && data.startTime) {
+					inBenchmarker.add(name, data.startTime, true);
+				}
+				oldCallback.call(null, data);
+			};
+		}
+		oldOn.call(socket, name, callback);
+	};
+	
+	var oldEmit = socket.emit;
+	var outBenchmarker = new Benchmarker('benchmark-out');
+	socket.emit = function (name, data) {
+		if (data) {
+			data.startTime = Date.now();
+			outBenchmarker.add(name, data.startTime);
+		}
+		oldEmit.call(socket, name, data);
+	};
 }

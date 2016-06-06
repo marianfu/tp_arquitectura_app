@@ -3,12 +3,46 @@
   <head>
     <meta charset='UTF-8' />
     <title>Phaser multiplayer game</title>
-   
-    <script src='/js/vendor/phaser.min.js'></script>
-    <script src='/socket.io/socket.io.js'></script>
+	
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<link rel="stylesheet" href="/css/style.css">
   </head>
   <body>
-    <div id="gameDiv"></div>
+	<div class="row">
+		<div id="gameDiv" class="col-md-8"></div>
+		
+		<div class="benchmarks col-md-4">
+			<h2>Benchmarks</h2>
+			
+			<div id="benchmark-out">
+				<h3>Outgoing Packets</h3>
+				<p>Packets per second: <span class="packets-per-second">-</span></p>
+				<div class="benchmark-table">
+					<table class="table table-striped">
+						<thead><th>Description</th><th>Time</th></thead>
+						<tbody></tbody>
+					</table>
+				</div>
+			</div>
+			
+			<div id="benchmark-in">
+				<h3>Incoming Packets</h3>
+				<p>Packets per second: <span class="packets-per-second">-</span></p>
+				<p>Average ellapsed ms: <span class="average-ellapsed-ms">-</span></p>
+				<div class="benchmark-table">
+					<table class="table table-striped">
+						<thead><th>Description</th><th>Time</th><th>Ellapsed ms</th></thead>
+						<tbody></tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<script src='/js/Benchmarker.js'></script>
+	<script src='/js/vendor/phaser.min.js'></script>
+    <script src='/socket.io/socket.io.js'></script>
+	<script src='https://code.jquery.com/jquery-2.2.4.js'></script>
     <script src='/js/RemotePlayer.js'></script>
     <script src='/js/client.js'></script>
   </body>
