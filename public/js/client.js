@@ -1,185 +1,171 @@
-/* global Phaser RemotePlayer io */
+var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gameDiv');
 
-var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gameDiv', { preload: preload, create: create, update: update, render: render })
-
-var socsoket;
-var land
 var player;
 var enemies;
-var currentSpeed = 0;
-var cursors;
-var upKey;
 var bmd;
-var posiblePos = {player:null,x: null, y: null};
+var possiblePos = {player:null,x: null, y: null};
 
-function preload() {
+var gameState = {
 
-    game.load.image('chunk', 'assets/chunk.png');
-    game.load.image('arrow', 'assets/asteroids_ship.png');
-}
+    preload: function () {
+        game.load.image('chunk', 'assets/chunk.png');
+        game.load.image('player', 'assets/asteroids_ships.png');
+        game.load.image('enemy', 'assets/asteroids_ships_enemy.png');
+    },
 
-function create() {
+    create: function () {
+        // socket = io.connect({'transports': ['polling']});
+        game.physics.startSystem(Phaser.Physics.ARCADE);
+        game.physics.arcade.gravity.y = 100;
+        game.time.advancedTiming = true;
+        game.stage.backgroundColor = '#0D47A1';
+        game.stage.disableVisibilityChange = true;
 
-    game.time.advancedTiming = true;
-    game.physics.startSystem(Phaser.Physics.ARCADE);
-    // socket = io.connect({'transports': ['polling']});
-    socket = io.connect();
-	setupHooks(socket);
-    game.stage.backgroundColor = '#so124184';
-    bmd = game.add.bitmapData(800, 600);
-    bmd.context.fillStyle = '#ffffff';
+        socket = io.connect();
+        setupHooks(socket);
 
-    game.stage.disableVisibilityChange = true;
+        bmd = game.add.bitmapData(800, 600);
+        bmd.context.fillStyle = '#E1F5FE';
 
-    var bg = game.add.sprite(0, 0, bmd);
+        player = game.add.sprite(32, 450, 'player');
+        player.anchor.set(0.5);
+        player.scale.set(0.6);
+        game.physics.enable(player, Phaser.Physics.ARCADE);
+        player.body.bounce.set(0.8);
+        player.body.collideWorldBounds = true;
 
-    game.physics.arcade.gravity.y = 100;
+        enemies = [];
+        game.input.onDown.add(this.launch, this);
 
-    player = game.add.sprite(32, 450, 'arrow');
-    player.anchor.set(0.5);
+        setEventHandlers();
+    },
 
-    game.physics.enable(player, Phaser.Physics.ARCADE);
+    launch: function () {
+        if (game.input.x < player.x) {
+            player.body.velocity.setTo(-200, -200);
+        }
+        else {
+            player.body.velocity.setTo(200, -200);
+        }
+    },
 
-    enemies = [];
+    update: function () {
 
-    player.body.collideWorldBounds = true;
-    player.body.bounce.set(0.8);
+        player.rotation = player.body.angle;
 
-    game.input.onDown.add(launch, this);
-    var upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
+        bmd.context.fillRect(player.x, player.y, 2, 2);
 
-    setEventHandlers();
-}
+        bmd.dirty = true;
 
-function launch() {
+        if (possiblePos.player) {
+            var movePlayer = possiblePos.player;
+            //movePlayer.player.x = possiblePos.x;
+            //movePlayer.player.y = possiblePos.y;
+            movePlayer.update(possiblePos.x, possiblePos.y);
+        }
 
-    if (game.input.x < player.x)
-    {
-        player.body.velocity.setTo(-200, -200);
+        socket.emit('move player', {
+            x: player.x,
+            y: player.y,
+            startTime: (new Date()).getTime()
+        });
+    },
+
+    render: function () {
+        game.debug.bodyInfo(player, 32, 32);
     }
-    else
-    {
-        player.body.velocity.setTo(200, -200);
-    }
+};
 
-}
-
-function update() {
-
-   player.rotation = player.body.angle;
-
-    bmd.context.fillRect(player.x, player.y, 2, 2);
-
-    bmd.dirty = true;
-
-    if (posiblePos.player) {
-      var movePlayer = posiblePos.player
-      movePlayer.player.x = posiblePos.x
-      movePlayer.player.y = posiblePos.y 
-    }
-
-    socket.emit('move player', {
-      x: player.x,
-      y: player.y,
-      startTime: (new Date()).getTime()
-    });
-}
-
-function render() {
-
-    game.debug.bodyInfo(player, 32, 32);
-
-}
+game.state.add('gameState', gameState);
+game.state.start('gameState');
 
 var setEventHandlers = function () {
-  // Socket connection successful
-  socket.on('connect', onSocketConnected);
+    // Socket connection successful
+    socket.on('connect', onSocketConnected);
 
-  // Socket disconnection
-  socket.on('disconnect', onSocketDisconnect);
+    // Socket disconnection
+    socket.on('disconnect', onSocketDisconnect);
 
-  // New player message received
-  socket.on('new player', onNewPlayer);
+    // New player message received
+    socket.on('new player', onNewPlayer);
 
-  // Player move message received
-  socket.on('move player', onMovePlayer);
+    // Player move message received
+    socket.on('move player', onMovePlayer);
 
-  // Player removed message received
-  socket.on('remove player', onRemovePlayer);
-}
+    // Player removed message received
+    socket.on('remove player', onRemovePlayer);
+};
 
 // Socket connected
 function onSocketConnected () {
-  console.log('Connected to socket server')
+    console.log('Connected to socket server');
 
-  // Reset enemies on reconnect
-  enemies.forEach(function (enemy) {
-    enemy.player.kill();
-  })
-  enemies = [];
+    // Reset enemies on reconnect
+    enemies.forEach(function (enemy) {
+        enemy.player.kill();
+    });
+    enemies = [];
 
-  // Send local player data to the game server
-  socket.emit('new player', { x: player.x, y: player.y });
+    // Send local player data to the game server
+    socket.emit('new player', { x: player.x, y: player.y });
 }
 
 // Socket disconnected
 function onSocketDisconnect () {
-  console.log('Disconnected from socket server');
+    console.log('Disconnected from socket server');
 }
 
 // New player
 function onNewPlayer (data) {
-  console.log('New player connected:', data.id);
+    console.log('New player connected:', data.id);
 
-  // Avoid possible duplicate players
-  var duplicate = playerById(data.id);
-  if (duplicate) {
-    console.log('Duplicate player!');
-    return;
-  }
-  // Add new player to the remote players array
-  enemies.push(new RemotePlayer(data.id, game, player, data.x, data.y, 'arrow'));
+    // Avoid possible duplicate players
+    var duplicate = playerById(data.id);
+    if (duplicate) {
+        console.log('Duplicate player!');
+        return;
+    }
+    // Add new player to the remote players array
+    enemies.push(new RemotePlayer(data.id, game, player, data.x, data.y, "enemy"));
 }
 
 // Move player
 function onMovePlayer (data) {
-  var movePlayer = playerById(data.id);
-
-  // Player not found
-  if (!movePlayer) {
-    console.log('Player not found: ', data.id);
-    return;
-  }
-
-  // Update player position
-  posiblePos.player = movePlayer;
-  posiblePos.x = data.x;
-  posiblePos.y = data.y;
+    var movePlayer = playerById(data.id);
+    // Player not found
+    if (!movePlayer) {
+        console.log('Player not found: ', data.id);
+        return;
+    }
+    // Update player position
+    possiblePos.player = movePlayer;
+    possiblePos.x = data.x;
+    possiblePos.y = data.y;
 }
 
 // Remove player
 function onRemovePlayer (data) {
 
-  var removePlayer = playerById(data.id);
-  // Player not found
-  if (!removePlayer) {
-    console.log('Player not found: ', data.id);
-    return;
-  }
+    var removePlayer = playerById(data.id);
+    // Player not found
+    if (!removePlayer) {
+        console.log('Player not found: ', data.id);
+        return;
+    }
 
-  removePlayer.player.kill();
-  // Remove player from array
-  enemies.splice(enemies.indexOf(removePlayer), 1);
+    removePlayer.player.kill();
+    // Remove player from array
+    enemies.splice(enemies.indexOf(removePlayer), 1);
 }
 
-// Find player by ID
+// Find player by id
 function playerById (id) {
-  for (var i = 0; i < enemies.length; i++) {
-    if (enemies[i].player.name === id) {
-      return enemies[i];
+    for (var i = 0; i < enemies.length; i++) {
+        if (enemies[i].player.name === id) {
+            return enemies[i];
+        }
     }
-  }
-  return false;
+    return false;
 }
 
 // Custom 'on' and 'emit' socket functions to benchmark performance
