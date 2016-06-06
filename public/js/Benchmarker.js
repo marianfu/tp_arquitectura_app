@@ -1,19 +1,19 @@
 (function(){
-	function Benchmarker(id) {
+	function Benchmarker(id, type) {
 		this.el = document.getElementById(id);
 		this.table = this.el.getElementsByTagName('tbody')[0];
 		this.packetsPerSecondSpan = this.el.getElementsByClassName('packets-per-second')[0];
 		this.ellapsedMsSpan = this.el.getElementsByClassName('average-ellapsed-ms')[0];
 		this.packetsCountSpan = this.el.getElementsByClassName('packets-count')[0];
 		
+		this.type = type;
 		this.packetCount = 0;
 		this.firstPacketArrivedAt = 0;
 		this.averageEllapsedMs = 0;
-		
-		this.maxRows = 100;
+		this.maxRows = 5;
 	}
 	
-	Benchmarker.prototype.add = function(desc, time, includeEllapsedMs) {
+	Benchmarker.prototype.add = function(desc, time) {
 		this.packetsCountSpan.innerText = ++this.packetCount;
 		var now = Date.now();
 		
@@ -27,11 +27,10 @@
 		row.insertCell(0).innerText = desc;
 		row.insertCell(1).innerText = time;
 		
-		if (includeEllapsedMs) {
+		if (this.type === 'in') {
 			var ellapsedMs = now - time;
 			row.insertCell(2).innerText = ellapsedMs;
-			this.averageEllapsedMs = this.averageEllapsedMs + (ellapsedMs - this.averageEllapsedMs) / this.packetCount;
-			this.ellapsedMsSpan.innerText = this.averageEllapsedMs;
+			this.ellapsedMsSpan.innerText = (this.averageEllapsedMs += (ellapsedMs - this.averageEllapsedMs) / this.packetCount);
 		}
 		
 		var rowCount = this.table.rows.length;

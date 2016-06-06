@@ -171,13 +171,13 @@ function playerById (id) {
 // Custom 'on' and 'emit' socket functions to benchmark performance
 function setupHooks(socket) {
 	var oldOn = socket.on;
-	var inBenchmarker = new Benchmarker('benchmark-in');
+	var inBenchmarker = new Benchmarker('benchmark-in', 'in');
 	socket.on = function (name, callback) {
 		if (callback) {
 			var oldCallback = callback;
 			callback = function (data) {
 				if (data && data.startTime) {
-					inBenchmarker.add(name, data.startTime, true);
+					inBenchmarker.add(name, data.startTime);
 				}
 				oldCallback.call(null, data);
 			};
@@ -186,7 +186,7 @@ function setupHooks(socket) {
 	};
 	
 	var oldEmit = socket.emit;
-	var outBenchmarker = new Benchmarker('benchmark-out');
+	var outBenchmarker = new Benchmarker('benchmark-out', 'out');
 	socket.emit = function (name, data) {
 		if (data) {
 			data.startTime = Date.now();
