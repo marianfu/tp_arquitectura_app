@@ -1,11 +1,11 @@
-.benchmarks {
-	@media (min-width: 992px) {
+@media (min-width: 992px) {
+	.benchmarks {
 		margin-left: -80px;
 	}
 }
 
 .benchmark-table {
-	height: 175px;
+	height: 150px;
 	overflow-y: auto;
 }
 
