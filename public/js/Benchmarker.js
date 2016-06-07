@@ -5,9 +5,9 @@
 		this.table = this.el.getElementsByTagName('tbody')[0];
 
 		if (type === 'resource') {
+			this.systemMemorySpan = this.el.getElementsByClassName('system-memory')[0];
+
 			this.updateCount = 0;
-			this.totalLoad = 0;
-			this.totalMem = 0;
 		} else {
 			this.packetsPerSecondSpan = this.el.getElementsByClassName('packets-per-second')[0];
 			this.ellapsedMsSpan = this.el.getElementsByClassName('average-ellapsed-ms')[0];
@@ -25,20 +25,20 @@
 
 	function resourceAdd(resources) {
 		this.updateCount++;
-		this.totalLoad += resources.load;
-		this.totalMem += resources.freeMemory;
+
+		this.systemMemorySpan.innerText = resources.systemMemory / 1024 / 1024 + ' MB';
 
 		var updatedTable = document.createElement('tbody');
 
 		var memRow = updatedTable.insertRow(0);
 			memRow.insertCell(0).innerText = 'Memory';
-			memRow.insertCell(1).innerText = (100 - resources.freeMemory / resources.totalMemory * 100).toFixed(2);
-			memRow.insertCell(2).innerText = (100 - this.totalMem / this.updateCount / resources.totalMemory * 100).toFixed(2);
+			memRow.insertCell(1).innerText = (resources.freeMemory / resources.systemMemory * 100).toFixed(2) + '%';
+			memRow.insertCell(2).innerText = (resources.averageFreeMemory / resources.systemMemory * 100).toFixed(2) + '%';
 
 		var cpuRow = updatedTable.insertRow(0);
 			cpuRow.insertCell(0).innerText = 'CPU';
-			cpuRow.insertCell(1).innerText = (resources.load).toFixed(2);
-			cpuRow.insertCell(2).innerText = (this.totalLoad / this.updateCount).toFixed(2);
+			cpuRow.insertCell(1).innerText = (resources.load).toFixed(2) + '%';
+			cpuRow.insertCell(2).innerText = (resources.averageLoad).toFixed(2) + '%';
 
 		this.table.parentNode.replaceChild(updatedTable, this.table);
 		this.table = updatedTable;

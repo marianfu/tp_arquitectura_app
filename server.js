@@ -12,9 +12,12 @@ var __socket;	// Socket controller
 var __players;	// Array of connected players
 var __forcePolling = false;
 var __resources = {
+  updates: 0,
   load: 0,
+  totalLoad: 0,
   freeMemory: 0,
-  totalMemory: 0
+  totalFreeMemory: 0,
+  systemMemory: 0
 };
 
 // Parse application arguments
@@ -47,11 +50,12 @@ function initMonitor() {
   // Start resource monitor
   monitor.start();
   monitor.on('monitor', function(event) {
-    __resources = {
-      load: event.loadavg[0],
-      freeMemory: event.freemem,
-      totalMemory: event.totalmem
-    }
+    __resources.updates++;
+    __resources.load = event.loadavg[0];
+    __resources.totalLoad += event.loadavg[0];
+    __resources.freeMemory = event.freemem;
+    __resources.totalFreeMemory += event.freemem;
+    __resources.systemMemory = event.totalmem;
   });
 }
 
@@ -128,10 +132,13 @@ function onMovePlayer (data) {
     x: movePlayer.getX(),
     y: movePlayer.getY(),
     load: __resources.load,
+    averageLoad: __resources.totalLoad / __resources.updates,
     freeMemory: __resources.freeMemory,
-    totalMemory: __resources.totalMemory,
+    averageFreeMemory: __resources.totalFreeMemory / __resources.updates,
+    systemMemory: __resources.systemMemory,
     startTime: data.startTime
   };
+  
   this.broadcast.emit('move player', data);
 }
 
