@@ -194,12 +194,14 @@ function getTransports() {
 function setupHooks(socket) {
 	var oldOn = socket.on;
 	var inBenchmarker = new Benchmarker('benchmark-in', 'in');
+    var resourceBenchmarker = new Benchmarker('benchmark-resource', 'resource');
 	socket.on = function (name, callback) {
 		if (callback) {
 			var oldCallback = callback;
 			callback = function (data) {
 				if (data && data.startTime) {
 					inBenchmarker.add(name, data.startTime);
+                    resourceBenchmarker.add(data);
 				}
 				oldCallback.call(null, data);
 			};
