@@ -5,6 +5,7 @@ var enemies;
 var bmd;
 var possiblePos = {player:null,x: null, y: null};
 var socket;
+var resourceBenchmarker;
 
 var gameState = {
 
@@ -84,6 +85,7 @@ function connect() {
     }
     socket = io.connect({transports: getTransports()});
     setupHooks(socket);
+    setupResourceMonitor();
 }
 
 function setEventHandlers() {
@@ -101,6 +103,9 @@ function setEventHandlers() {
 
     // Player removed message received
     socket.on('remove player', onRemovePlayer);
+
+    // Resource update message received
+    socket.on('resource update', onResourceUpdate);
 
 
     // Window hash change
@@ -177,6 +182,11 @@ function onRemovePlayer (data) {
     enemies.splice(enemies.indexOf(removePlayer), 1);
 }
 
+// Update resources
+function onResourceUpdate(data) {
+    resourceBenchmarker.add(data);
+}
+
 // Find player by id
 function playerById (id) {
     for (var i = 0; i < enemies.length; i++) {
@@ -222,14 +232,13 @@ function getTransports() {
 function setupHooks(socket) {
 	var oldOn = socket.on;
 	var inBenchmarker = new Benchmarker('benchmark-in', 'in');
-    var resourceBenchmarker = new Benchmarker('benchmark-resource', 'resource');
+    
 	socket.on = function (name, callback) {
 		if (callback) {
 			var oldCallback = callback;
 			callback = function (data) {
 				if (data && data.startTime) {
 					inBenchmarker.add(name, data.startTime);
-                    resourceBenchmarker.add(data);
 				}
 				oldCallback.call(null, data);
 			};
@@ -247,3 +256,10 @@ function setupHooks(socket) {
 		oldEmit.call(socket, name, data);
 	};
 }
+
+// Handle resource info updates received from the server
+function setupResourceMonitor() {
+    resourceBenchmarker = new Benchmarker('benchmark-resource', 'resource');
+}
+
+

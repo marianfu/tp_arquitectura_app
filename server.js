@@ -46,19 +46,6 @@ function init() {
   setEventHandlers();
 }
 
-function initMonitor() {
-  // Start resource monitor
-  monitor.start();
-  monitor.on('monitor', function(event) {
-    __resources.updates++;
-    __resources.load = event.loadavg[0];
-    __resources.totalLoad += event.loadavg[0];
-    __resources.freeMemory = event.freemem;
-    __resources.totalFreeMemory += event.freemem;
-    __resources.systemMemory = event.totalmem;
-  });
-}
-
 function initSocket() {
   var options = {};
 
@@ -67,6 +54,29 @@ function initSocket() {
   }
 
   return io.listen(server, options);
+}
+
+function initMonitor() {
+  // Start resource monitor
+  monitor.start({
+    delay: 1000
+  });
+  monitor.on('monitor', function(event) {
+    __resources.updates++;
+    __resources.load = event.loadavg[0];
+    __resources.totalLoad += event.loadavg[0];
+    __resources.freeMemory = event.freemem;
+    __resources.totalFreeMemory += event.freemem;
+    __resources.systemMemory = event.totalmem;
+
+    __socket.sockets.emit('resource update', {
+      load: __resources.load,
+      averageLoad: __resources.totalLoad / __resources.updates,
+      freeMemory: __resources.freeMemory,
+      averageFreeMemory: __resources.totalFreeMemory / __resources.updates,
+      systemMemory: __resources.systemMemory,
+    });
+  });
 }
 
 var setEventHandlers = function () {
@@ -131,11 +141,6 @@ function onMovePlayer (data) {
     id: movePlayer.id,
     x: movePlayer.getX(),
     y: movePlayer.getY(),
-    load: __resources.load,
-    averageLoad: __resources.totalLoad / __resources.updates,
-    freeMemory: __resources.freeMemory,
-    averageFreeMemory: __resources.totalFreeMemory / __resources.updates,
-    systemMemory: __resources.systemMemory,
     startTime: data.startTime
   };
   
