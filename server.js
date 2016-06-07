@@ -125,6 +125,7 @@ function onNewPlayer (data) {
 }
 
 function onMovePlayer (data) {
+  var now = Date.now();
   // Find player in array
   var movePlayer = playerById(this.id);
   // Player not found
@@ -141,7 +142,9 @@ function onMovePlayer (data) {
     id: movePlayer.id,
     x: movePlayer.getX(),
     y: movePlayer.getY(),
-    startTime: data.startTime
+    clientSendTime: data.clientSendTime,
+	serverSendTime: now,
+	clientTransport: data.clientTransport
   };
   
   this.broadcast.emit('move player', data);

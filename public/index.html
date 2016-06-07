@@ -16,7 +16,8 @@
 				<button name="button-websocket" type="button" class="btn btn-default">WebSocket</button>
 				<button name="button-polling" type="button" class="btn btn-default">Polling</button>
 			</div>
-			<h2 id="transport-type"></h2>
+			
+			<h2>Benchmarks</h2>
 			
 			<div id="benchmark-out">
 				<h3>Outgoing Packets</h3>
@@ -34,10 +35,11 @@
 				<h3>Incoming Packets</h3>
 				<p>Packets count: <span class="packets-count">0</span></p>
 				<p>Packets per second: <span class="packets-per-second">-</span></p>
-				<p>Average ellapsed ms: <span class="average-ellapsed-ms">-</span></p>
+				<p>Average Client -&gt; Server ellapsed ms: <span class="client-to-server-ellapsed-ms">-</span></p>
+				<p>Average Server -&gt; Client ellapsed ms: <span class="server-to-client-ellapsed-ms">-</span></p>
 				<div class="benchmark-table">
 					<table class="table table-striped">
-						<thead><th>Description</th><th>Time</th><th>Ellapsed ms</th></thead>
+						<thead><th>Description</th><th>Time</th><th>Client -&gt; Server</th><th>Server -&gt; Client</th></thead>
 						<tbody></tbody>
 					</table>
 				</div>
@@ -60,7 +62,6 @@
 	<script src='/js/vendor/phaser.min.js'></script>
     <script src='/socket.io/socket.io.js'></script>
 	<script src='https://code.jquery.com/jquery-2.2.4.js'></script>
-	<script src='/js/Player2.js'></script>
     <script src='/js/RemotePlayer.js'></script>
     <script src='/js/client.js'></script>
   </body>

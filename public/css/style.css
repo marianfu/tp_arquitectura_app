@@ -6,10 +6,10 @@
 
 .benchmark-table {
 	height: 150px;
-	overflow-y: auto;
 }
 
 .packets-per-second,
-.average-ellapsed-ms {
+.client-to-server-ellapsed-ms,
+.server-to-client-ellapsed-ms {
 	font-weight: 700;
 }

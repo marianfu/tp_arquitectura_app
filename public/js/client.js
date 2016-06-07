@@ -224,12 +224,13 @@ function getTransports() {
 			break;
 	}
 	
-	document.getElementById('transport-type').innerText = 'Transport type(s): ' + transports.join(', '); 
 	return transports;
 }
 
 // Custom 'on' and 'emit' socket functions to benchmark performance
-function setupHooks(socket) {
+function setupHooks(socket) {	
+	var transport = socket.io.engine.transports[0];
+
 	var oldOn = socket.on;
 	var inBenchmarker = new Benchmarker('benchmark-in', 'in');
     
@@ -237,8 +238,8 @@ function setupHooks(socket) {
 		if (callback) {
 			var oldCallback = callback;
 			callback = function (data) {
-				if (data && data.startTime) {
-					inBenchmarker.add(name, data.startTime);
+				if (data && data.clientSendTime && data.clientTransport && data.serverSendTime) {
+					inBenchmarker.add(name, data.clientSendTime, data.clientTransport, data.serverSendTime, transport);
 				}
 				oldCallback.call(null, data);
 			};
@@ -248,10 +249,12 @@ function setupHooks(socket) {
 	
 	var oldEmit = socket.emit;
 	var outBenchmarker = new Benchmarker('benchmark-out', 'out');
+	
 	socket.emit = function (name, data) {
 		if (data) {
-			data.startTime = Date.now();
-			outBenchmarker.add(name, data.startTime);
+			data.clientSendTime = Date.now();
+			data.clientTransport = transport;
+			outBenchmarker.add(name, data.clientSendTime);
 		}
 		oldEmit.call(socket, name, data);
 	};

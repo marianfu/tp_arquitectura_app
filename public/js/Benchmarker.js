@@ -10,13 +10,15 @@
 			this.updateCount = 0;
 		} else {
 			this.packetsPerSecondSpan = this.el.getElementsByClassName('packets-per-second')[0];
-			this.ellapsedMsSpan = this.el.getElementsByClassName('average-ellapsed-ms')[0];
+			this.clientToServerEllapsedMsSpan = this.el.getElementsByClassName('client-to-server-ellapsed-ms')[0];
+			this.serverToClientEllapsedMsSpan = this.el.getElementsByClassName('server-to-client-ellapsed-ms')[0];
 			this.packetsCountSpan = this.el.getElementsByClassName('packets-count')[0];
 			
 			this.packetCount = 0;
 			this.firstPacketArrivedAt = 0;
-			this.averageEllapsedMs = 0;
-			this.maxRows = 5;
+			this.averageClientToServerEllapsedMs = 0;
+			this.averageServerToClientEllapsedMs = 0;
+			this.maxRows = 3;
 		}
 
 		this.add = this.type === 'resource' ? resourceAdd : timeAdd;
@@ -44,17 +46,17 @@
 		this.table = updatedTable;
 	};
 
-	function timeAdd(desc, time) {
-		this.packetsCountSpan.innerText = ++this.packetCount;
+	function timeAdd(desc, clientToServerTime, clientTransport, serverToClientTime, serverTransport) {
 		var now = Date.now();
+		this.packetsCountSpan.innerText = ++this.packetCount;
 		
 		if (this.packetCount === 1) {
-			this.firstPacketArrivedAt = time;
+			this.firstPacketArrivedAt = clientToServerTime;
 		} else {
 			this.packetsPerSecondSpan.innerText = (this.packetCount / ((now - this.firstPacketArrivedAt) / 1000)).toFixed(2);
 		}
 		
-		var date = new Date(time);
+		var date = new Date(clientToServerTime);
 		var formattedDate = date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() + '.' + date.getMilliseconds();
 
 		var row = this.table.insertRow(0);
@@ -62,9 +64,14 @@
 		row.insertCell(1).innerText = formattedDate;
 		
 		if (this.type === 'in') {
-			var ellapsedMs = now - time;
-			row.insertCell(2).innerText = ellapsedMs;
-			this.ellapsedMsSpan.innerText = (this.averageEllapsedMs += (ellapsedMs - this.averageEllapsedMs) / this.packetCount).toFixed(2);
+			var clientToServerEllapsedMs = serverToClientTime - clientToServerTime;
+			var serverToClientEllapsedMs = now - serverToClientTime;
+			console.log(clientToServerEllapsedMs);
+			row.insertCell(2).innerText = clientToServerEllapsedMs + 'ms (' + clientTransport + ')';
+			row.insertCell(3).innerText = serverToClientEllapsedMs + 'ms (' + serverTransport + ')';
+			
+			this.clientToServerEllapsedMsSpan.innerText = (this.averageClientToServerEllapsedMs += (clientToServerEllapsedMs - this.averageClientToServerEllapsedMs) / this.packetCount).toFixed(2);
+			this.serverToClientEllapsedMsSpan.innerText = (this.averageServerToClientEllapsedMs += (serverToClientEllapsedMs - this.averageServerToClientEllapsedMs) / this.packetCount).toFixed(2);
 		}
 		
 		var rowCount = this.table.rows.length;
