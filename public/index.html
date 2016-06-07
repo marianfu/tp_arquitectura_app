@@ -2,7 +2,7 @@
 <html lang='en'>
   <head>
     <meta charset='UTF-8' />
-    <title>Phaser multiplayer game</title>
+    <title>Benchmarking</title>
 	
 	<link rel="stylesheet" href="/css/bootstrap.min.css">
 	<link rel="stylesheet" href="/css/style.css">
@@ -12,6 +12,10 @@
 		<div id="gameDiv" class="col-md-8"></div>
 		
 		<div class="benchmarks col-md-4">
+			<div class="btn-group" role="group" aria-label="...">
+				<button name="button-websocket" type="button" class="btn btn-default">WebSocket</button>
+				<button name="button-polling" type="button" class="btn btn-default">Polling</button>
+			</div>
 			<h2 id="transport-type"></h2>
 			
 			<div id="benchmark-out">

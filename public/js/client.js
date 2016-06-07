@@ -4,6 +4,7 @@ var player;
 var enemies;
 var bmd;
 var possiblePos = {player:null,x: null, y: null};
+var socket;
 
 var gameState = {
 
@@ -14,15 +15,13 @@ var gameState = {
     },
 
     create: function () {
-        // socket = io.connect({'transports': ['polling']});
         game.physics.startSystem(Phaser.Physics.ARCADE);
         game.physics.arcade.gravity.y = 100;
         game.time.advancedTiming = true;
         game.stage.backgroundColor = '#0D47A1';
         game.stage.disableVisibilityChange = true;
 
-        socket = io.connect({transports: getTransports()});
-        setupHooks(socket);
+        connect();
 
         bmd = game.add.bitmapData(800, 600);
         bmd.context.fillStyle = '#E1F5FE';
@@ -79,7 +78,15 @@ var gameState = {
 game.state.add('gameState', gameState);
 game.state.start('gameState');
 
-var setEventHandlers = function () {
+function connect() {
+    if (socket) {
+        socket.disconnect();
+    }
+    socket = io.connect({transports: getTransports()});
+    setupHooks(socket);
+}
+
+function setEventHandlers() {
     // Socket connection successful
     socket.on('connect', onSocketConnected);
 
@@ -94,6 +101,18 @@ var setEventHandlers = function () {
 
     // Player removed message received
     socket.on('remove player', onRemovePlayer);
+
+
+    // Window hash change
+    window.onhashchange = connect;
+
+    // Bind buttons
+    document.getElementsByName('button-websocket')[0].onclick = function() {
+        location.hash = 'websocket';
+    };
+    document.getElementsByName('button-polling')[0].onclick = function() {
+        location.hash = 'polling';
+    };
 };
 
 // Socket connected
@@ -171,18 +190,27 @@ function playerById (id) {
 function getTransports() {
 	var hash = location.hash;
 	var transports = [];
+
+    var wsButton = document.getElementsByName('button-websocket')[0];
+    var pButton = document.getElementsByName('button-polling')[0];
 	
 	switch (hash) {
 		case '#ws':
 		case '#websocket':
 			transports.push('websocket');
+            wsButton.className += ' active';
+            pButton.className = pButton.className.replace(' active', '');
 			break;
 		case '#xhr':
 		case '#polling':
 			transports.push('polling');
+            pButton.className += ' active';
+            wsButton.className = wsButton.className.replace(' active', '');
 			break;
 		default:
 			transports = ['websocket', 'polling'];
+            wsButton.className += ' active';
+            pButton.className = pButton.className.replace(' active', '');
 			break;
 	}
 	
