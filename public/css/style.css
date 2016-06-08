@@ -6,6 +6,7 @@
 
 .benchmark-table {
 	height: 150px;
+	overflow-y: hidden;
 }
 
 .packets-per-second,

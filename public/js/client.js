@@ -238,8 +238,9 @@ function setupHooks(socket) {
 		if (callback) {
 			var oldCallback = callback;
 			callback = function (data) {
-				if (data && data.clientSendTime && data.clientTransport && data.serverSendTime) {
-					inBenchmarker.add(name, data.clientSendTime, data.clientTransport, data.serverSendTime, transport);
+				if (data && data.benchmarkData) {
+					data.benchmarkData.serverTransport = transport;
+					inBenchmarker.add(name, data.benchmarkData);
 				}
 				oldCallback.call(null, data);
 			};
@@ -252,9 +253,11 @@ function setupHooks(socket) {
 	
 	socket.emit = function (name, data) {
 		if (data) {
-			data.clientSendTime = Date.now();
-			data.clientTransport = transport;
-			outBenchmarker.add(name, data.clientSendTime);
+			data.benchmarkData = {
+				clientSendTime: Date.now(),
+				clientTransport: transport
+			};
+			outBenchmarker.add(name, data.benchmarkData);
 		}
 		oldEmit.call(socket, name, data);
 	};
