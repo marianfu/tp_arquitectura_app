@@ -5,6 +5,8 @@ var enemies;
 var bmd;
 var possiblePos = {player:null,x: null, y: null};
 var socket;
+var inBenchmarker;
+var outBenchmarker;
 var resourceBenchmarker;
 
 var gameState = {
@@ -64,11 +66,18 @@ var gameState = {
             movePlayer.update(possiblePos.x, possiblePos.y);
         }
 
+		var benchmarkData = {
+			clientSendTime: Date.now(),
+			clientTransport: socket.io.engine.transports[0]
+		};
+			
         socket.emit('move player', {
             x: player.x,
             y: player.y,
-            startTime: (new Date()).getTime()
+			benchmarkData: benchmarkData
         });
+		
+		outBenchmarker.add('move player', benchmarkData);
     },
 
     render: function () {
@@ -84,8 +93,7 @@ function connect() {
         socket.disconnect();
     }
     socket = io.connect({transports: getTransports()});
-    setupHooks(socket);
-    setupResourceMonitor();
+    setupBenchmarkers();
 }
 
 function setEventHandlers() {
@@ -155,6 +163,9 @@ function onNewPlayer (data) {
 
 // Move player
 function onMovePlayer (data) {
+	data.benchmarkData.serverTransport = socket.io.engine.transports[0];
+	inBenchmarker.add('move player', data.benchmarkData);
+	
     var movePlayer = playerById(data.id);
     // Player not found
     if (!movePlayer) {
@@ -205,20 +216,16 @@ function getTransports() {
     var pButton = document.getElementsByName('button-polling')[0];
 	
 	switch (hash) {
-		case '#ws':
-		case '#websocket':
-			transports.push('websocket');
-            wsButton.className += ' active';
-            pButton.className = pButton.className.replace(' active', '');
-			break;
 		case '#xhr':
 		case '#polling':
 			transports.push('polling');
             pButton.className += ' active';
             wsButton.className = wsButton.className.replace(' active', '');
 			break;
+		case '#ws':
+		case '#websocket':
 		default:
-			transports = ['websocket', 'polling'];
+			transports.push('websocket');
             wsButton.className += ' active';
             pButton.className = pButton.className.replace(' active', '');
 			break;
@@ -227,45 +234,8 @@ function getTransports() {
 	return transports;
 }
 
-// Custom 'on' and 'emit' socket functions to benchmark performance
-function setupHooks(socket) {	
-	var transport = socket.io.engine.transports[0];
-
-	var oldOn = socket.on;
-	var inBenchmarker = new Benchmarker('benchmark-in', 'in');
-    
-	socket.on = function (name, callback) {
-		if (callback) {
-			var oldCallback = callback;
-			callback = function (data) {
-				if (data && data.benchmarkData) {
-					data.benchmarkData.serverTransport = transport;
-					inBenchmarker.add(name, data.benchmarkData);
-				}
-				oldCallback.call(null, data);
-			};
-		}
-		oldOn.call(socket, name, callback);
-	};
-	
-	var oldEmit = socket.emit;
-	var outBenchmarker = new Benchmarker('benchmark-out', 'out');
-	
-	socket.emit = function (name, data) {
-		if (data) {
-			data.benchmarkData = {
-				clientSendTime: Date.now(),
-				clientTransport: transport
-			};
-			outBenchmarker.add(name, data.benchmarkData);
-		}
-		oldEmit.call(socket, name, data);
-	};
+function setupBenchmarkers() {
+	inBenchmarker = new Benchmarker('benchmark-in', 'in');
+	outBenchmarker = new Benchmarker('benchmark-out', 'out');
+	resourceBenchmarker = new Benchmarker('benchmark-resource', 'resource');
 }
-
-// Handle resource info updates received from the server
-function setupResourceMonitor() {
-    resourceBenchmarker = new Benchmarker('benchmark-resource', 'resource');
-}
-
-

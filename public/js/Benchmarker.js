@@ -72,8 +72,8 @@
 			
 			this.clientToServerEllapsedMsSpan.innerText = 
 				(this.averageClientToServerEllapsedMs += (clientToServerEllapsedMs - this.averageClientToServerEllapsedMs) / this.packetCount).toFixed(2);
-			this.serverToClientEllapsedMsSpan.innerText = (
-				this.averageServerToClientEllapsedMs += (serverToClientEllapsedMs - this.averageServerToClientEllapsedMs) / this.packetCount).toFixed(2);
+			this.serverToClientEllapsedMsSpan.innerText = 
+				(this.averageServerToClientEllapsedMs += (serverToClientEllapsedMs - this.averageServerToClientEllapsedMs) / this.packetCount).toFixed(2);
 		}
 		
 		var rowCount = this.table.rows.length;
