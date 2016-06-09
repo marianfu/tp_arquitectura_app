@@ -174,7 +174,7 @@ function onNewPlayer (data) {
     // Avoid possible duplicate players
     var duplicate = playerById(data.id);
     if (duplicate) {
-        console.log('Duplicate player!');
+        console.log('Jugador duplicado');
         return;
     }
     // Add new player to the remote players array
@@ -202,7 +202,7 @@ function onRemovePlayer (data) {
     var removePlayer = playerById(data.id);
     // Player not found
     if (!removePlayer) {
-        console.log('Player not found: ', data.id);
+        console.log('No se encontró al jugador: ', data.id);
         return;
     }
 
