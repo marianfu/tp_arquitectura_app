@@ -1,3 +1,15 @@
+/**
+*
+*
+* Benchmarker
+*
+* @author Álvaro Calace
+* @author Mariano Furriel
+* @author Gabriel Rodriguez
+* @author Octavio Zamudio
+*
+*
+*/
 (function(){
 	function Benchmarker(id, type) {
 		this.type = type;

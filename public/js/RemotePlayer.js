@@ -1,3 +1,6 @@
+/**
+* Jugador remoto
+*/
 var RemotePlayer = function (index, game, player, posX, posY, key) {
 
   this.game = game; // Game reference

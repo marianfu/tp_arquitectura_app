@@ -1,3 +1,15 @@
+/**
+*
+*
+* Cliente (vanilla js + Phaser)
+*
+* @author Álvaro Calace
+* @author Mariano Furriel
+* @author Gabriel Rodriguez
+* @author Octavio Zamudio
+*
+*
+*/
 var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gameDiv');
 
 var player;
@@ -9,6 +21,10 @@ var inBenchmarker;
 var outBenchmarker;
 var resourceBenchmarker;
 
+/**
+* Inicialización del juego
+* y de Socket.io
+*/
 var gameState = {
 
     preload: function () {
@@ -88,6 +104,10 @@ var gameState = {
 game.state.add('gameState', gameState);
 game.state.start('gameState');
 
+
+/**
+* Conexión de Socket.io
+*/
 function connect() {
     if (socket) {
         socket.disconnect();
@@ -96,6 +116,9 @@ function connect() {
     setupBenchmarkers();
 }
 
+/**
+* Listeners de eventos
+*/
 function setEventHandlers() {
     // Socket connection successful
     socket.on('connect', onSocketConnected);
@@ -128,9 +151,8 @@ function setEventHandlers() {
     };
 };
 
-// Socket connected
 function onSocketConnected () {
-    console.log('Connected to socket server');
+    console.log('Conectado al servidor');
 
     // Reset enemies on reconnect
     enemies.forEach(function (enemy) {
@@ -142,14 +164,12 @@ function onSocketConnected () {
     socket.emit('new player', { x: player.x, y: player.y });
 }
 
-// Socket disconnected
 function onSocketDisconnect () {
-    console.log('Disconnected from socket server');
+    console.log('Desconectado del servidor');
 }
 
-// New player
 function onNewPlayer (data) {
-    console.log('New player connected:', data.id);
+    console.log('Nuevo jugador conectado:', data.id);
 
     // Avoid possible duplicate players
     var duplicate = playerById(data.id);
@@ -161,7 +181,6 @@ function onNewPlayer (data) {
     enemies.push(new RemotePlayer(data.id, game, player, data.x, data.y, "enemy"));
 }
 
-// Move player
 function onMovePlayer (data) {
 	data.benchmarkData.serverTransport = socket.io.engine.transports[0];
 	inBenchmarker.add('move player', data.benchmarkData);
@@ -169,7 +188,7 @@ function onMovePlayer (data) {
     var movePlayer = playerById(data.id);
     // Player not found
     if (!movePlayer) {
-        console.log('Player not found: ', data.id);
+        console.log('No se encontró al jugador: ', data.id);
         return;
     }
     // Update player position
@@ -178,7 +197,6 @@ function onMovePlayer (data) {
     possiblePos.y = data.y;
 }
 
-// Remove player
 function onRemovePlayer (data) {
 
     var removePlayer = playerById(data.id);
@@ -193,12 +211,10 @@ function onRemovePlayer (data) {
     enemies.splice(enemies.indexOf(removePlayer), 1);
 }
 
-// Update resources
 function onResourceUpdate(data) {
     resourceBenchmarker.add(data);
 }
 
-// Find player by id
 function playerById (id) {
     for (var i = 0; i < enemies.length; i++) {
         if (enemies[i].player.name === id) {
@@ -208,6 +224,10 @@ function playerById (id) {
     return false;
 }
 
+/**
+* Parametrización de la selección de transports
+* para Socket.io (websocket / polling)
+*/
 function getTransports() {
 	var hash = location.hash;
 	var transports = [];
@@ -234,6 +254,9 @@ function getTransports() {
 	return transports;
 }
 
+/**
+* Inicialización de los renderers de benchmarking
+*/
 function setupBenchmarkers() {
 	inBenchmarker = new Benchmarker('benchmark-in', 'in');
 	outBenchmarker = new Benchmarker('benchmark-out', 'out');

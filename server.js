@@ -1,3 +1,15 @@
+/**
+*
+*
+* Servidor (node.js)
+*
+* @author Álvaro Calace
+* @author Mariano Furriel
+* @author Gabriel Rodriguez
+* @author Octavio Zamudio
+*
+*
+*/
 var util = require('util');
 var http = require('http');
 var ecstatic = require('ecstatic');
@@ -8,8 +20,8 @@ var Player = require('./lib/Player');
 var ipaddress = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 var port = process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT || 8080;
 
-var __socket;	// Socket controller
-var __players;	// Array of connected players
+var __socket;   // Controlador de Socket
+var __players;	// Array de jugadores conectados
 var __forcePolling = false;
 var __resources = {
   updates: 0,
@@ -20,7 +32,11 @@ var __resources = {
   systemMemory: 0
 };
 
-// Parse application arguments
+/**
+* Parsing de argumentos de la aplicación.
+* Puede forzarse el polling inicializando la aplicación como:
+* $ node server.js polling
+*/
 process.argv.forEach(function (val, index, array) {
   if (index === 2 && val === 'polling') {
     __forcePolling = true;
@@ -28,7 +44,9 @@ process.argv.forEach(function (val, index, array) {
 });
 
 
-// Create and start the http server
+/**
+* Crear e inicializar servidor HTTP
+*/
 var server = http.createServer(
   ecstatic({ root: __dirname + '/public' })
 ).listen(port, ipaddress, function (err) {
@@ -38,14 +56,19 @@ var server = http.createServer(
   init();
 })
 
+/**
+* Inicializar listeners y eventos
+*/
 function init() {
   initMonitor();
   __players = [];
   __socket = initSocket();
-  // Start listening for events
   setEventHandlers();
 }
 
+/**
+* Inicializar Socket.io
+*/
 function initSocket() {
   var options = {};
 
@@ -56,8 +79,10 @@ function initSocket() {
   return io.listen(server, options);
 }
 
+/**
+* Inicializar monitor de recursos de la máquina host
+*/
 function initMonitor() {
-  // Start resource monitor
   monitor.start({
     delay: 1000
   });
@@ -84,43 +109,54 @@ var setEventHandlers = function () {
 }
 
 function onSocketConnection (client) {
-  util.log('New player has connected: ' + client.id);
-  // Listen for client disconnected
+  util.log('Jugador conectado: ' + client.id);
+
+  // Listener de desconexión
   client.on('disconnect', onClientDisconnect);
-  // Listen for new player message
+
+  // Listener de nuevo jugador
   client.on('new player', onNewPlayer);
-  // Listen for move player message
+
+  // Listener de movimiento de un jugador
   client.on('move player', onMovePlayer);
 }
 
+/**
+* Listener de desconexión
+*/
 function onClientDisconnect () {
-  
-  util.log('Player has disconnected: ' + this.id);
+  util.log('El jugador se desconectó: ' + this.id);
   var removePlayer = playerById(this.id);
-  // Player not found
+
+  // Jugador no encontrado
   if (!removePlayer) {
-    util.log('Player not found: ' + this.id);
+    util.log('No se encontró al jugador: ' + this.id);
     return ;
   }
-  // Remove player from players array
+
+  // Eliminar jugadores de la lista
   __players.splice(__players.indexOf(removePlayer), 1);
-  // Broadcast removed player to connected socket clients
+
+  // Emitir el mensaje de desconexión a todos los sockets
   this.broadcast.emit('remove player', {id: this.id});
 }
 
 function onNewPlayer (data) {
-  // Create a new player
+  // Crear un nuevo jugador
   var newPlayer = new Player(data.x, data.y);
   newPlayer.id = this.id;
-  // Broadcast new player to connected socket clients
+
+  // Emitir vía broadcast la conexión del nuevo jugador
   this.broadcast.emit('new player', {id: newPlayer.id, x: newPlayer.getX(), y: newPlayer.getY()});
-  // Send existing players to the new player
+
+  // Enviar a conexión a todos los jugadores conectados
   var i, existingPlayer;
   for (i = 0; i < __players.length; i++) {
     existingPlayer = __players[i];
     this.emit('new player', {id: existingPlayer.id, x: existingPlayer.getX(), y: existingPlayer.getY()});
   }
-  // Add new player to the players array
+
+  // Agregar jugador a la lista
   __players.push(newPlayer);
 }
 
@@ -128,18 +164,20 @@ function onMovePlayer (data) {
   var now = Date.now();
   var benchmarkData = data.benchmarkData;
   
-  // Find player in array
+  // Encontrar jugador en la lista
   var movePlayer = playerById(this.id);
-  // Player not found
+
+  // Jugador no encontrado
   if (!movePlayer) {
-    util.log('Player not found: ' + this.id);
+    util.log('No se encontró al jugador: ' + this.id);
     return ;
   }
-  // Update player position
+
+  // Actualizar la posición del jugador
   movePlayer.setX(data.x);
   movePlayer.setY(data.y);
-  // Broadcast updated position to connected socket clients
 
+  // Emitir la posición actualizada vía broadcast
   var data = {
     id: movePlayer.id,
     x: movePlayer.getX(),
